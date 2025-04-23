@@ -3,10 +3,10 @@ newrg = {
     name_rg  = "alok-rg"
     location = "westus"
   }
-  rg2 = {
-    name_rg  = "alok02-rg"
-    location = "westus"
-  }
+  # rg2 = {
+  #   name_rg  = "alok02-rg"
+  #   location = "westus"
+  # }
 }
 
 newaks = {
