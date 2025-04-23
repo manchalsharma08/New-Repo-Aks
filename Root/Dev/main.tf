@@ -1,10 +1,9 @@
 module "rg" {
-    source = "../Child/Resource-Group"
-    rg     = var.newrg
+  source = "../../Child/Resource-Group"
+  rg     = var.newrg
 }
 
-module "aks" {
-    source = "../Child/aks-cluster"
-    aks     = var.newaks
+module "aksh" {
+  source = "../../Child/Aks-Cluster"
+  aks    = var.newaks
 }
-
