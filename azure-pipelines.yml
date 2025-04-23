@@ -1,8 +1,5 @@
-trigger:
-  branches:
-    include:
-     - main
-     - master
+trigger: none
+ 
 
 
 pool: Default
@@ -22,6 +19,7 @@ stages:
        inputs:
          provider: 'azurerm'
          command: 'init'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
          backendServiceArm: 'humAzure'
          backendAzureRmResourceGroupName: 'myman-rg'
          backendAzureRmStorageAccountName: 'mycvffdgfd434gffbvvbc444'
@@ -31,10 +29,12 @@ stages:
        inputs:
          provider: 'azurerm'
          command: 'validate'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
      - task: TerraformTaskV4@4
        inputs:
          provider: 'azurerm'
          command: 'custom'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
          outputTo: 'console'
          customCommand: 'fmt'
          environmentServiceNameAzureRM: 'humAzure'
@@ -42,10 +42,12 @@ stages:
        inputs:
          provider: 'azurerm'
          command: 'plan'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
          environmentServiceNameAzureRM: 'humAzure'
      - task: TerraformTaskV4@4
        inputs:
          provider: 'azurerm'
          command: 'apply'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
          commandOptions: '--auto-approve'
          environmentServiceNameAzureRM: 'humAzure'
