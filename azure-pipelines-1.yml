@@ -1,0 +1,56 @@
+trigger:
+  branches:
+    include:
+     - main
+     - master
+
+
+pool: Default
+
+
+stages:
+- stage: InfraCreateForAKS
+  displayName: "Aks Infra Create"
+  jobs:
+  - job: InfraJobForAks
+    displayName: "Aks Infra Job"
+    steps:
+     - task: TerraformInstaller@1
+       inputs:
+         terraformVersion: 'latest'
+     - task: TerraformTaskV4@4
+       inputs:
+         provider: 'azurerm'
+         command: 'init'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
+         backendServiceArm: 'humAzure'
+         backendAzureRmResourceGroupName: 'myman-rg'
+         backendAzureRmStorageAccountName: 'mycvffdgfd434gffbvvbc444'
+         backendAzureRmContainerName: 'mycontainer'
+         backendAzureRmKey: 'ram.terraform.tfstate'
+     - task: TerraformTaskV4@4
+       inputs:
+         provider: 'azurerm'
+         command: 'validate'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
+     - task: TerraformTaskV4@4
+       inputs:
+         provider: 'azurerm'
+         command: 'custom'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
+         outputTo: 'console'
+         customCommand: 'fmt'
+         environmentServiceNameAzureRM: 'humAzure'
+     - task: TerraformTaskV4@4
+       inputs:
+         provider: 'azurerm'
+         command: 'plan'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
+         environmentServiceNameAzureRM: 'humAzure'
+     - task: TerraformTaskV4@4
+       inputs:
+         provider: 'azurerm'
+         command: 'apply'
+         workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
+         commandOptions: '--auto-approve'
+         environmentServiceNameAzureRM: 'humAzure'
