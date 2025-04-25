@@ -8,6 +8,7 @@ trigger:
 pool: Default
 
 
+
 stages:
 - stage: InfraCreateForAKS
   displayName: "Aks Infra Create"
