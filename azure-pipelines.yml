@@ -80,6 +80,12 @@ stages:
     - job: ACRLOGINJOB
       displayName: "Acr login ki job"
       steps:
+
+       - script: |
+          az acr show --name myacr0216 --resource-group myman-rg -o table
+          az acr login --name myacr0216
+          az acr check-health -n myacr0216az --yes
+          
        - task: Docker@2
          inputs:
            containerRegistry: 'AcrLoginSC'
