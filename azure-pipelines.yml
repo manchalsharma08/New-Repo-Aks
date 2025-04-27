@@ -15,7 +15,7 @@ variables:
   Service_Conn_Name: 'humAzure'
   ACR_Name: 'myacr0216'
   ACR_Repository_Name: 'myacr0216.azurecr.io/my-html-calculator:v2'
-  dockerRegistryServiceConnection: 'myacr0216SC'
+  dockerRegistryServiceConnection: 'AcrLoginSC'
 
 
 stages:
@@ -80,13 +80,12 @@ stages:
     - job: ACRLOGINJOB
       displayName: "Acr login ki job"
       steps:
-       - task: AzureCLI@2
+       - task: Docker@2
          inputs:
-           azureSubscription: 'ACRLogin'
-           scriptType: 'ps'
-           scriptLocation: 'inlineScript'
-           inlineScript: 'az acr login -n myacr0216 --expose-token'
-           powerShellErrorActionPreference: 'continue'
+           containerRegistry: 'AcrLoginSC'
+           command: 'login'
+
+           
 - stage: DockerActivity
   displayName: "Docker Activity and command for image"
   dependsOn: ACRLOGIN
