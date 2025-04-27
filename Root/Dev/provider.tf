@@ -6,7 +6,7 @@ terraform {
     }
   }
 backend "azurerm" {
-    resource_group_name  = "myman-rg "
+    resource_group_name  = "myman-rg"
     storage_account_name = "mycvffdgfd434gffbvvbc444"
     container_name       = "mycontainer"
     key                 = "ram.terraform.tfstate"
