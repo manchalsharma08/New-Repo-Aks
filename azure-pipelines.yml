@@ -73,11 +73,15 @@ stages:
       displayName: "ACR Creation"
 
     # ACR Login (CLI + Docker)
-    - task: Docker@2
-      inputs:
-        command: login
-        containerRegistry: $(dockerRegistryServiceConnection)
-      displayName: 'Login to ACR'
+   - task: Docker@2
+     displayName: 'Login to ACR'
+       inputs:
+       command: login
+       containerRegistry: 'ACRLogin'
+- task: Docker@2
+  inputs:
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
 
     # Docker Build
     - script: |
