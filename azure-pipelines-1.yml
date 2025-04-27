@@ -4,18 +4,20 @@ trigger:
      - main
      - master
 
-
 pool: Default
 
 variables:
+- 
   Source_Code_Directory : '$(System.DefaultWorkingDirectory)/Root/Dev'
   Resource_group_Name: 'myman-rg'
   Storage_Account: 'mycvffdgfd434gffbvvbc444'
   Container_Name: 'mycontainer'
   Container_key: 'ram.terraform.tfstate'
   Service_Conn_Name: 'humAzure'
-  ACR_Name: myacr0216
-  ACR_Repository_Name: 'myacr0216.azurecr.io/my-html-calculator'
+  ACR_Name: 'myacr0216'
+  ACR_Repository_Name: 'my-html-calculator'
+  dockerRegistryServiceConnection: 'myacr0216SC' # Update this to your service connection name
+- group: ACR-Creds
 
 stages:
 - stage: InfraCreateForAKS
@@ -23,183 +25,115 @@ stages:
   jobs:
   - job: InfraJobForAks
     displayName: "Aks Infra Job"
-  
-     
-
-#
-
-# Install Terraform manually
-
-    # - script: |
-    #     echo "Installing Terraform..."
-    #     curl -sLo terraform.zip https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
-    #     unzip terraform.zip
-    #     sudo mv terraform /usr/local/bin/
-    #     terraform -version
-    #   displayName: "Install Terraform"
-
-
-     - task: TerraformInstaller@1
-       inputs:
-         terraformVersion: 'latest'
-
-
- # Terraform Init
-
-     - script: |
-         echo "Initializing Terraform..."
-         terraform init 
-       workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
-       displayName: "Terraform Init"
-
-
- # Terraform Validate
-     - script: |
-         echo "terraform validation and fmt process"
-         terraform validate
-       workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
-       displayName: "Terraform Validate"
-
-
- # Terraform fmt
-     - script: |
-         echo "terraform fmt process"
-         terraform fmt
-       workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
-       displayName: "Terraform FMT"
-
- # Terraform plan
-     - script: |
-         echo "terraform plan process"
-         terraform plan
-       workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
-       displayName: "Terraform Plan"
-
- # Terraform apply
-     - script: |
-         echo "terraform apply process"
-         terraform apply --auto-approve
-       workingDirectory: '$(System.DefaultWorkingDirectory)/Root/Dev'
-       displayName: "Terraform apply"
-         
-
- # ACR account Create
-     - script: |
-         echo "ACR account Create"
-         az acr create --resource-group $Resource_group_Name --name $ACR_Name --sku Basic
-       displayName: "ACR account Create"
-
-
-     - script: 
-         ech "acr login"
-         az acr login --name myacr0216az
-         az acr check-health -n myacr0216 --yes
-         az acr login -n myacr0216 --expose-token
-
-    
-
-       
-
-    #  - task: TerraformTaskV4@4
-    #    inputs:
-    #      provider: 'azurerm'
-    #      command: 'init'
-    #      workingDirectory: $(Source_Code_Directory)
-    #      backendServiceArm: $(Service_Conn_Name)
-    #      backendAzureRmResourceGroupName: $(Resource_group_Name)
-    #      backendAzureRmStorageAccountName: $(Storage_Account)
-    #      backendAzureRmContainerName: $(Container_Name)
-    #      backendAzureRmKey: $(Container_key)
-    #  - task: TerraformTaskV4@4
-    #    inputs:
-    #      provider: 'azurerm'
-    #      command: 'validate'
-    #      workingDirectory: $(Source_Code_Directory)
-    #  - task: TerraformTaskV4@4
-    #    inputs:
-    #      provider: 'azurerm'
-    #      command: 'custom'
-    #      workingDirectory: $(Source_Code_Directory)
-    #      outputTo: 'console'
-    #      customCommand: 'fmt'
-    #      environmentServiceNameAzureRM: $(Service_Conn_Name)
-    #  - task: TerraformTaskV4@4
-    #    inputs:
-    #      provider: 'azurerm'
-    #      command: 'plan'
-    #      workingDirectory: $(Source_Code_Directory)
-    #      environmentServiceNameAzureRM: $(Service_Conn_Name)
-    #  - task: TerraformTaskV4@4
-    #    inputs:
-    #      provider: 'azurerm'
-    #      command: 'apply'
-    #      workingDirectory: $(Source_Code_Directory)
-    #      commandOptions: '--auto-approve'
-    #      environmentServiceNameAzureRM: $(Service_Conn_Name)
-
     steps:
-# Step 1: Install Docker (if not already installed on the VM)
-- task: UseDocker@0
-  inputs:
-    containerRegistry: '$(dockerRegistryServiceConnection)' # Azure Container Registry service connection
-    repository: 'myacr0216.azurecr.io/my-html-calculator'   # ACR repository name
-    dockerfile: '**/Dockerfile'  # Path to Dockerfile
 
-# Step 2: Build Docker Image
-- script: |
-    docker build -t my-html-calculator:v1 .
-  displayName: 'Build Docker Image'
+    # Install Terraform
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
 
-# Step 3: Log in to Azure Container Registry (ACR)
-- task: Docker@2
-  inputs:
-    command: 'login'
-    containerRegistry: '$(dockerRegistryServiceConnection)'  # ACR Service Connection
+    # Terraform Init
+    - script: |
+        echo "Initializing Terraform..."
+        terraform init
+      workingDirectory: $(Source_Code_Directory)
+      displayName: "Terraform Init"
 
-# Step 4: Push Docker Image to ACR
-- task: Docker@2
-  inputs:
-    command: 'push'
-    containerRegistry: '$(dockerRegistryServiceConnection)'
-    repository: 'myacr0216.azurecr.io/my-html-calculator'
-    tags: |
-      latest
-      v1
+    # Terraform Validate
+    - script: |
+        echo "Running terraform validation..."
+        terraform validate
+      workingDirectory: $(Source_Code_Directory)
+      displayName: "Terraform Validate"
 
-# Step 5: Pull Docker Image (just to check if it's successfully pushed)
-- task: Docker@2
-  inputs:
-    command: 'pull'
-    containerRegistry: '$(dockerRegistryServiceConnection)'
-    repository: 'myacr0216.azurecr.io/my-html-calculator'
-    tags: 'v1'
+    # Terraform FMT
+    - script: |
+        echo "Running terraform fmt..."
+        terraform fmt
+      workingDirectory: $(Source_Code_Directory)
+      displayName: "Terraform FMT"
 
-# Step 6: Run Docker Container (Optional)
-- script: |
-    docker run -d -p 8080:80 --name my-app-container myacr0216.azurecr.io/my-html-calculator:v1
-  displayName: 'Run Docker Container'
+    # Terraform Plan
+    - script: |
+        echo "Running terraform plan..."
+        terraform plan
+      workingDirectory: $(Source_Code_Directory)
+      displayName: "Terraform Plan"
 
-# Step 2: Build Docker Image
-     - script: |
-        docker build -t my-html-calculator:v2 .
-       displayName: 'Build Docker Image'
-      
-# Step 3: Log in to Azure Container Registry (ACR)
-     - task: Docker@2
-       inputs:
-         containerRegistry: 'myacr0216SC'
-         command: 'login'
-     - script: 
-         docker tag my-html-calculator myacr0216.azurecr.io/my-html-calculator:latest
-         echo "taging done"
-         docker push myacr0216.azurecr.io/my-html-calculator:v2
-         echo "ACR push "
-         az acr repository list --name myacr0216 -o table
-         docker pull myacr0216.azurecr.io/my-html-calculator:v2
-         docker run -d -p 8080:80 myacr0216.azurecr.io/my-html-calculator:v2
+    # Terraform Apply
+    - script: |
+        echo "Running terraform apply..."
+        terraform apply --auto-approve
+      workingDirectory: $(Source_Code_Directory)
+      displayName: "Terraform Apply"
+
+    # ACR Creation (Optional – usually done once)
+    - script: |
+        echo "Creating ACR..."
+        az acr create --resource-group $(Resource_group_Name) --name $(ACR_Name) --sku Basic
+      displayName: "ACR Creation"
+
+    # ACR Login (CLI + Docker)
+    - task: Docker@2
+      inputs:
+        command: login
+        containerRegistry: $(dockerRegistryServiceConnection)
+      displayName: 'Login to ACR'
+
+    # Docker Build
+    - script: |
+        echo "Building Docker image..."
+        docker build -t $(ACR_Repository_Name) .
+      displayName: "Docker Build"
+
+    # Docker Tag and Push
+    - script: |
+        docker tag my-html-calculator myacr0216.azurecr.io/my-html-calculator:v2
+        echo "Tagging Docker image..."
+        docker push $(ACR_Repository_Name):v2
+        echo "Docker image pushed to ACR"
+      displayName: "Docker Tag & Push"
+
+    # Docker Pull (Verification)
+    - script: |
+        echo "Pulling image from ACR..."
+        docker pull $(ACR_Repository_Name):v2
+      displayName: "Docker Pull"
+
+    # Docker Run (Optional)
+    - script: |
+        echo "Running container..."
+        docker run -d -p 8082:80 --name my-app-container $(ACR_Repository_Name):v2
+      displayName: "Run Docker Container"
+
+    # Enable ACR Admin (if needed)
+    - script: |
+        echo "Enabling ACR admin access..."
+        az acr update -n $(ACR_Name) --admin-enabled true
+      displayName: "Enable ACR Admin"
+  
+
+- stage: DeployToAKS
+  displayName: "Deploy to AKS"
+  dependsOn: InfraCreateForAKS
+  jobs:
+  - job: DeployJob
+    displayName: "Apply Kubernetes Manifests"
+    steps:
+    - task: Kubernetes@1
+      displayName: 'Deploy Deployment and Service'
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: 'k8sServiceConnec'
+        namespace: 'default'
+        command: 'apply'
+        useConfigurationFile: true
+        configuration: |
+            $(System.DefaultWorkingDirectory)/Root/Dev/deployment.yaml
+            $(System.DefaultWorkingDirectory)/Root/Dev/service.yaml
+        secretType: 'dockerRegistry'
+        containerRegistryType: 'Azure Container Registry'
+
+   
+
         
-        ##  Need to enable admin first.
-     - script: 
-
-         az acr update -n myacr0216 --admin-enabled true
-     
