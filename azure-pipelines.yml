@@ -73,52 +73,65 @@ stages:
       displayName: "ACR Creation"
 
     # ACR Login (CLI + Docker)
-   - task: Docker@2
-     displayName: 'Login to ACR'
-       inputs:
-       command: login
-       containerRegistry: 'ACRLogin'
-- task: Docker@2
-  inputs:
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
+- stage: ACRLOGIN
+  dependsOn: InfraCreateForAKS
+  displayName: "Acr LOGIN"
+  jobs:
+    - job: ACRLOGINJOB
+      displayName: "Acr login ki job"
+      steps:
+       - task: AzureCLI@2
+         inputs:
+           azureSubscription: 'ACRLogin'
+           scriptType: 'ps'
+           scriptLocation: 'inlineScript'
+           inlineScript: 'az acr login -n myacr0216 --expose-token'
+           powerShellErrorActionPreference: 'continue'
+- stage: DockerActivity
+  displayName: "Docker Activity and command for image"
+  dependsOn: ACRLOGIN
+  jobs:
+    - job: DockerActivity
+      displayName: "Docker Activity after ACR login"
+      steps:
+      # Docker Build
+        - script: |
+            echo "Building Docker image..."
+            docker build -t $(ACR_Repository_Name) .
+          displayName: "Docker Build"
+         
 
-    # Docker Build
-    - script: |
-        echo "Building Docker image..."
-        docker build -t $(ACR_Repository_Name) .
-      displayName: "Docker Build"
 
-    # Docker Tag and Push
-    - script: |
-        docker tag my-html-calculator myacr0216.azurecr.io/my-html-calculator:v2
-        echo "Tagging Docker image..."
-        docker push $(ACR_Repository_Name):v2
-        echo "Docker image pushed to ACR"
-      displayName: "Docker Tag & Push"
+      # Docker Tag and Push
+        - script: |
+            docker tag my-html-calculator myacr0216.azurecr.io/my-html-calculator:v2
+            echo "Tagging Docker image..."
+            docker push $(ACR_Repository_Name):v2
+            echo "Docker image pushed to ACR"
+            displayName: "Docker Tag & Push"
+           
+      # Docker Pull (Verification)
+        - script: |
+             echo "Pulling image from ACR..."
+             docker pull $(ACR_Repository_Name):v2
+          displayName: "Docker Pull"
 
-    # Docker Pull (Verification)
-    - script: |
-        echo "Pulling image from ACR..."
-        docker pull $(ACR_Repository_Name):v2
-      displayName: "Docker Pull"
+      # Docker Run (Optional)
+        - script: |
+            echo "Running container..."
+            docker run -d -p 8082:80 --name my-app-container $(ACR_Repository_Name):v2
+          displayName: "Run Docker Container"
 
-    # Docker Run (Optional)
-    - script: |
-        echo "Running container..."
-        docker run -d -p 8082:80 --name my-app-container $(ACR_Repository_Name):v2
-      displayName: "Run Docker Container"
-
-    # Enable ACR Admin (if needed)
-    - script: |
-        echo "Enabling ACR admin access..."
-        az acr update -n $(ACR_Name) --admin-enabled true
-      displayName: "Enable ACR Admin"
+      # Enable ACR Admin (if needed)
+        - script: |
+            echo "Enabling ACR admin access..."
+            az acr update -n $(ACR_Name) --admin-enabled true
+          displayName: "Enable ACR Admin"
   
 
 - stage: DeployToAKS
   displayName: "Deploy to AKS"
-  dependsOn: InfraCreateForAKS
+  dependsOn: DockerActivity
   jobs:
   - job: DeployJob
     displayName: "Apply Kubernetes Manifests"
