@@ -7,7 +7,6 @@ trigger:
 pool: Default
 
 variables:
-- 
   Source_Code_Directory : '$(System.DefaultWorkingDirectory)/Root/Dev'
   Resource_group_Name: 'myman-rg'
   Storage_Account: 'mycvffdgfd434gffbvvbc444'
@@ -16,8 +15,8 @@ variables:
   Service_Conn_Name: 'humAzure'
   ACR_Name: 'myacr0216'
   ACR_Repository_Name: 'my-html-calculator'
-  dockerRegistryServiceConnection: 'myacr0216SC' # Update this to your service connection name
-- group: ACR-Creds
+  dockerRegistryServiceConnection: 'myacr0216SC'
+
 
 stages:
 - stage: InfraCreateForAKS
