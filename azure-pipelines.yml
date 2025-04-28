@@ -114,7 +114,7 @@ stages:
             echo "Tagging Docker image..."
             docker push myacr0216.azurecr.io/my-html-calculator:v2
             echo "Docker image pushed to ACR"
-            displayName: "Docker Tag & Push"
+          
            
       # Docker Pull (Verification)
         - script: |
