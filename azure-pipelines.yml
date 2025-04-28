@@ -85,11 +85,12 @@ stages:
           az acr show --name myacr0216 --resource-group myman-rg -o table
           az acr login --name myacr0216
           az acr check-health -n myacr0216az --yes
+          az acr login -n myacr0216 --expose-token
           
-       - task: Docker@2
-         inputs:
-           containerRegistry: 'AcrLoginSC'
-           command: 'login'
+      #  - task: Docker@2
+      #    inputs:
+      #      containerRegistry: 'AcrLoginSC'
+      #      command: 'login'
 
            
 - stage: DockerActivity
