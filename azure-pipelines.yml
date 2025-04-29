@@ -115,20 +115,20 @@ stages:
             
             echo $(ACR_PASSWORD) | docker login myacr0216.azurecr.io -u myacr0216 --password-stdin
             
-            docker push myacr0216.azurecr.io/my-html-calculator:v2
+            # docker push myacr0216.azurecr.io/my-html-calculator:v2
             echo "Docker image pushed to ACR"
           
            
       # Docker Pull (Verification)
         - script: |
              echo "Pulling image from ACR..."
-             docker pull yacr0216.azurecr.io/my-html-calculator:v2
+             docker pull yacr0216.azurecr.io/my-html-calculator:v1
           displayName: "Docker Pull"
 
       # Docker Run (Optional)
         - script: |
             echo "Running container..."
-            docker run -d -p 8082:80 --name my-app-container $(ACR_Repository_Name):v2
+            docker run -d -p 8082:80 --name my-app-container $(ACR_Repository_Name):v1
           displayName: "Run Docker Container"
 
       # Enable ACR Admin (if needed)
