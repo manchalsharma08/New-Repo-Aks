@@ -112,7 +112,9 @@ stages:
         - script: |
             docker tag my-html-calculator myacr0216.azurecr.io/my-html-calculator:v2
             echo "Tagging Docker image..."
-            docker login myacr0216.azurecr.io -u myacr0216 -p $(ACR_PASSWORD)
+            
+            echo $(ACR_PASSWORD) | docker login myacr0216.azurecr.io -u $(ACR_USERNAME) --password-stdin
+            
             docker push myacr0216.azurecr.io/my-html-calculator:v2
             echo "Docker image pushed to ACR"
           
