@@ -31,4 +31,4 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: yourdockerhubusername/my-image-name:latest, yourdockerhubusername/my-image-name:${{ github.sha }}
+        tags: manchalsharma08/my-nginx-app:latest, manchalsharma08/my-nginx-app:${{ github.sha }}
