@@ -40,6 +40,6 @@ jobs:
       run: |
         echo "Expose Docker image to browser"
         echo "Docker image exposed successfully"  
-        docker run -d -p 80:80 manchalsharma08/my-nginx-app:latest
-        echo "Docker image is running on http://localhost:80"
-        echo "You can access the Docker image in your browser at http://localhost:80" 
+        docker run -d -p 8081:80 manchalsharma08/my-nginx-app:latest
+        echo "Docker image is running on http://localhost:8081"
+        echo "You can access the Docker image in your browser at http://localhost:8081" 
