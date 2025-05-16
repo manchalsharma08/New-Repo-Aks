@@ -1,0 +1,44 @@
+
+
+name: 'Terraform'
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Run Terraform based on branch name
+        run: |
+          ENV_BRANCH=$(echo "${GITHUB_REF##*/}")
+          DIR="New-Repo-Aks/Root/${ENV_BRANCH^}"  # Capitalize first letter (dev → Dev)
+          
+          echo "Running Terraform in: $DIR"
+          cd "$DIR"
+
+          terraform init
+          terraform fmt -check
+          terraform plan -input=false
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            terraform apply -auto-approve -input=false
+          fi
